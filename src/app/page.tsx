@@ -1,18 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 export default function Home() {
+  const [theme, setTheme] = useState<string>();
   const [storyTitle, setStoryTitle] = useState<string>();
   const [storyBody, setStoryBody] = useState<string>();
+
+  const handleChangeTheme = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    setTheme(event.target.value);
+    setStoryTitle('');
+    setStoryBody('');
+  }, [setTheme, setStoryTitle]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const subject = form.value;
     // call the LLM with the subject as the main prompt
     const response = await fetch('api', {
       method: 'POST',
-      body: JSON.stringify({ subject }),
+      body: JSON.stringify({ theme }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -23,16 +29,24 @@ export default function Home() {
 
   //! call this method when the start story button is pressed
   const handleStartStoryStream = async () => {
-//! reset the story body, call the backend
-// and display the response in the story body
+    //! reset the story body, call the backend
     setStoryBody('');
+
+    // and display the response in the story body
     const response = await fetch('api', {
       method: 'POST',
-      body: JSON.stringify({ storyTitle }),
+      body: JSON.stringify({ theme, storyTitle }),
     });
-    const { data } = await response.json();
-    console.log('response',response)
-    setStoryBody(data);
+    //the reader will act as a data communication "pipe"
+    const reader = response?.body?.getReader();
+    const decoder = new TextDecoder();
+    //keep the connection while we keep receiving new response chunks
+    while (true) {
+      const { value, done } = await reader!.read();
+      if (done) break;
+      const chunkValue = decoder.decode(value);
+      setStoryBody((prev) => prev + chunkValue);
+    }
   };
 
   return (
@@ -44,10 +58,10 @@ export default function Home() {
           <div>
             <label htmlFor="subject">Main subject of the story:</label>
             {/*<input name="subject" placeholder="subject..." />*/}
-            <select name="subject">
-              <option value="cats">Shrooms</option>
+            <select name="subject" onChange={handleChangeTheme}>
+              <option value="shrooms">Shrooms</option>
               <option value="unicorns">Unicorns</option>
-              <option value="elfs">Fairies</option>
+              <option value="faries">Fairies</option>
             </select>
           </div>
           <button className=" border-2 border-fuchsia-900 bg-fuchsia-500/20">Ask AI Model</button>

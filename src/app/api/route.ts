@@ -29,18 +29,42 @@ const makeStoryTitle = async (subject: string) => {
 };
 
 const streamStory = async (storyTitle: string) => {
-  return new NextResponse(JSON.stringify({ data: 'And here the story begins...' }), { headers: { 'content-type': 'application/json' } });
+  const encoder = new TextEncoder();
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
+  const model = new ChatOpenAI({
+    openAIApiKey: process.env.OPENAI_API_KEY,
+    temperature: 0.9,
+    streaming: true,
+    callbacks: [{
+      handleLLMNewToken: async (token) => {
+        await writer.ready;
+        await writer.write(encoder.encode(`${token}`));
+      },
+      handleLLMEnd: async () => {
+        await writer.ready;
+        await writer.close();
+      },
+    }],
+  });
+  const prompt = new PromptTemplate({
+    inputVariables: ['storyTitle'],
+    template: 'Tell me story titled {storyTitle}',
+  });
+  const chain = new LLMChain({
+    llm: model, prompt, verbose: true,
+  });
+  return new NextResponse(stream.readable, { headers: { 'content-type': 'text/event-stream' } });
 };
 
 export async function POST(req: Request) {
-  const { subject, storyTitle } = await req.json();
-
+  const { theme, storyTitle } = await req.json();
   // if the request has a storyTitle then return the
   // streamStory()
   if (storyTitle) {
     return streamStory(storyTitle);
   }
   //! if we don't have a storyTitle the return one
-  const gptResponse = await makeStoryTitle(subject);
+  const gptResponse = await makeStoryTitle(theme);
   return Response.json({ data: gptResponse });
 }
