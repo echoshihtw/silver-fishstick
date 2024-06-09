@@ -54,6 +54,7 @@ const streamStory = async (storyTitle: string) => {
   const chain = new LLMChain({
     llm: model, prompt, verbose: true,
   });
+  chain.invoke({ storyTitle });
   return new NextResponse(stream.readable, { headers: { 'content-type': 'text/event-stream' } });
 };
 
