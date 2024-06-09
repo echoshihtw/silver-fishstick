@@ -31,6 +31,7 @@ export default function Home() {
       body: JSON.stringify({ storyTitle }),
     });
     const { data } = await response.json();
+    console.log('response',response)
     setStoryBody(data);
   };
 
@@ -57,6 +58,7 @@ export default function Home() {
             Tell me the story of {storyTitle}
           </button>
         }
+        {storyBody && storyBody}
       </div>
     </div>
   );
