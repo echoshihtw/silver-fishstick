@@ -1,17 +1,26 @@
 'use client';
-import React, { useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 
 function Page() {
   const [question, setQuestion] = useState<string>();
   const [answers, setAnswers] = useState<string[]>([]);
-  const handleGetQuestion = async () => {
+  const [correctIndex, setCorrectIndex] = useState<number>();
+  const handleGetQuestion = useCallback(async () => {
     const response = await fetch('api/trivia', {
       method: 'GET',
     });
-    const data = await response.json();
+    const { data } = await response.json();
     setQuestion(data.question);
     setAnswers(data.answers);
-  };
+    setCorrectIndex(data.correctIndex);
+  }, []);
+
+  const checkAnswer = useCallback(async (selectedIndex: number) => {
+    (correctIndex === selectedIndex) ?
+      alert('🥳 Correct!') :
+      alert('🥲 Try again!');
+  },[correctIndex]);
+
   return (
     <div className="w-full p-20">
       <div className="grid place-items-center border-amber-300 border-2 p-20 gap-5">
@@ -20,11 +29,14 @@ function Page() {
           className="border-2 border-fuchsia-900 bg-fuchsia-500/20 py-2 px-3"
           onClick={handleGetQuestion}>Ask me a question
         </button>
-        <div className='flex flex-col gap-4'>
+        <div className="flex flex-col gap-4">
           <h2>{question}</h2>
-          <div className='flex flex-col gap-2'>
+          <div className="flex flex-col gap-2">
             {answers && answers.map((answer, index) => (
-              <button  className='border-amber-300 border-2 px-2 py-3 cursor-pointer hover:bg-amber-100' key={answer}>{index + 1}. {answer}</button>
+              <button className="border-amber-300 border-2 px-2 py-3 cursor-pointer hover:bg-amber-100"
+                      key={answer}
+                      onClick={() => checkAnswer(index)}>{index + 1}. {answer}
+              </button>
             ))
             }
           </div>
@@ -34,4 +46,4 @@ function Page() {
   );
 }
 
-export default Page;
+export default memo(Page);
