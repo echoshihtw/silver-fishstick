@@ -61,7 +61,7 @@ export default function Home() {
               <option value="faries">Fairies</option>
             </select>
           </div>
-          <button className=" border-2 border-fuchsia-900 bg-fuchsia-500/20">Ask AI Model</button>
+          <button className="">Ask AI Model</button>
         </form>
         {storyTitle &&
           <button onClick={handleStartStoryStream}

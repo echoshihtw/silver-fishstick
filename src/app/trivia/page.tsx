@@ -24,7 +24,7 @@ function Page() {
           <h2>{question}</h2>
           <div className='flex flex-col gap-2'>
             {answers && answers.map((answer, index) => (
-              <button  className='border-amber-300 border-2 px-2 py-3 cursor-pointer hover:bg-amber-100'>{index + 1}. {answer}</button>
+              <button  className='border-amber-300 border-2 px-2 py-3 cursor-pointer hover:bg-amber-100' key={answer}>{index + 1}. {answer}</button>
             ))
             }
           </div>
