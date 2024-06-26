@@ -8,8 +8,5 @@
   "htmlWhitespaceSensitivity": "ignore",
   "singleAttributePerLine": true,
   "bracketSameLine": false,
-  "plugins": [
-    "prettier-plugin-svelte"
-  ],
   "bracketSpacing": true
 }
