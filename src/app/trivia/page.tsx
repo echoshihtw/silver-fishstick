@@ -1,5 +1,6 @@
 'use client';
 import React, { memo, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 function Page() {
   const [question, setQuestion] = useState<string>();
@@ -23,10 +24,11 @@ function Page() {
     },
     [correctIndex]
   );
-
+  const router = useRouter();
   return (
-    <div className="w-full p-20">
-      <div className="grid place-items-center border-amber-300 border-2 p-20 gap-5">
+    <div className="w-full">
+      <button onClick={() => router.push('/')}>&lt; home</button>
+      <div className="grid place-items-center gap-5">
         <h1>🍄The Psychedelic Trivia 🍄</h1>
         <button
           className="border-2 border-fuchsia-900 bg-fuchsia-500/20 py-2 px-3"

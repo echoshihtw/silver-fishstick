@@ -1,5 +1,6 @@
 'use client';
 import React, { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [theme, setTheme] = useState<string>();
@@ -16,7 +17,7 @@ export default function Home() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // call the LLM with the subject as the main prompt
-    const response = await fetch('api', {
+    const response = await fetch('api/story-teller', {
       method: 'POST',
       body: JSON.stringify({ theme }),
       headers: {
@@ -48,11 +49,12 @@ export default function Home() {
       setStoryBody((prev) => prev + chunkValue);
     }
   };
-
+  const router = useRouter();
   return (
-    <div className="w-full p-20">
-      <div className="grid place-items-center border-amber-300 border-2 p-20 gap-5">
-        <h1>The Story Maker</h1>
+    <div className="w-full">
+      <button onClick={() => router.push('/')}>&lt; home</button>
+      <div className="grid place-items-center gap-5">
+        <h1>✨ The Story Maker ✨️</h1>
         <em>This app uses a GPT Model to generate a story for kids.</em>
         <form
           onSubmit={handleSubmit}
@@ -69,7 +71,9 @@ export default function Home() {
               <option value="faries">Fairies</option>
             </select>
           </div>
-          <button className="">Ask AI Model</button>
+          <button className="border-2 border-fuchsia-900 bg-fuchsia-500/20 py-2 w-full">
+            Ask AI Model
+          </button>
         </form>
         {storyTitle && (
           <button
