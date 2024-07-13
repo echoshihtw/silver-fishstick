@@ -8,7 +8,9 @@ function Page() {
       method: 'POST',
     });
     const { data } = await response.json();
-    setFacts([...facts, data] as string[]);
+    if (data) {
+      setFacts([...facts, data] as string[]);
+    }
   };
   return (
     <div className="w-full p-20">
