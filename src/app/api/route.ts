@@ -5,7 +5,6 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { LLMChain } from 'langchain/chains';
 import { NextResponse } from 'next/server';
 
-
 const makeStoryTitle = async (subject: string) => {
   const model = new ChatOpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
@@ -18,7 +17,7 @@ const makeStoryTitle = async (subject: string) => {
     inputVariables: ['subject'],
     template: 'Tell me a funny adult drug story title about {subject},',
   });
-// a chain that links the model, the prompt and the verbose options
+  // a chain that links the model, the prompt and the verbose options
   const chain = new LLMChain({
     llm: model,
     prompt,
@@ -36,26 +35,32 @@ const streamStory = async (storyTitle: string) => {
     openAIApiKey: process.env.OPENAI_API_KEY,
     temperature: 0.9,
     streaming: true,
-    callbacks: [{
-      handleLLMNewToken: async (token) => {
-        await writer.ready;
-        await writer.write(encoder.encode(`${token}`));
+    callbacks: [
+      {
+        handleLLMNewToken: async (token) => {
+          await writer.ready;
+          await writer.write(encoder.encode(`${token}`));
+        },
+        handleLLMEnd: async () => {
+          await writer.ready;
+          await writer.close();
+        },
       },
-      handleLLMEnd: async () => {
-        await writer.ready;
-        await writer.close();
-      },
-    }],
+    ],
   });
   const prompt = new PromptTemplate({
     inputVariables: ['storyTitle'],
     template: 'Tell me story titled {storyTitle}',
   });
   const chain = new LLMChain({
-    llm: model, prompt, verbose: true,
+    llm: model,
+    prompt,
+    verbose: true,
   });
   chain.invoke({ storyTitle });
-  return new NextResponse(stream.readable, { headers: { 'content-type': 'text/event-stream' } });
+  return new NextResponse(stream.readable, {
+    headers: { 'content-type': 'text/event-stream' },
+  });
 };
 
 export async function POST(req: Request) {
